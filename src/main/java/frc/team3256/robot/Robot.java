@@ -1,31 +1,16 @@
 package frc.team3256.robot;
 
+import com.revrobotics.CANPIDController;
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMaxLowLevel;
+import com.revrobotics.ControlType;
 import edu.wpi.first.wpilibj.TimedRobot;
-import frc.team3256.robot.math.Vector;
-import frc.team3256.robot.odometry.PoseEstimator;
-import frc.team3256.robot.operation.TeleopUpdater;
-import frc.team3256.robot.operations.Constants;
-import frc.team3256.robot.operations.DrivePower;
-import frc.team3256.robot.path.Path;
-import frc.team3256.robot.path.PurePursuitTracker;
-import frc.team3256.robot.subsystems.DriveTrain;
-import frc.team3256.warriorlib.hardware.ADXRS453_Calibrator;
-import frc.team3256.warriorlib.loop.Looper;
+import edu.wpi.first.wpilibj.XboxController;
 
 public class Robot extends TimedRobot {
-
-    PoseEstimator poseEstimator = new PoseEstimator(new Vector(0,0));
-    DriveTrain driveTrain = DriveTrain.getInstance();
-    Looper enabledLooper;
-    TeleopUpdater teleopUpdater;
-    DrivePower drivePower;
-    Path p;
-    PurePursuitTracker purePursuitTracker;
-
-    //ADXRS453_Calibrator gyroCalibrator;
-
-
-
+    XboxController xboxController;
+    CANSparkMax sparkMax;
+    CANPIDController pidController;
 
     /**
      * This function is called when the robot is first started up and should be
@@ -33,14 +18,17 @@ public class Robot extends TimedRobot {
      */
     @Override
     public void robotInit() {
-        enabledLooper = new Looper(1.0/200.0);
+        sparkMax = new CANSparkMax(0, CANSparkMaxLowLevel.MotorType.kBrushless);
+        sparkMax.setIdleMode(CANSparkMax.IdleMode.kBrake);
+        xboxController = new XboxController(0);
 
-        enabledLooper.addLoops(driveTrain, poseEstimator);
-        teleopUpdater = new TeleopUpdater();
-        //gyroCalibrator = new ADXRS453_Calibrator(driveTrain.getGyro());
-        teleopUpdater = new TeleopUpdater();
-        driveTrain.getGyro().initGyro();
-        driveTrain.getGyro().calibrate();
+        pidController = sparkMax.getPIDController();
+        pidController.setP(0.1); //velocity: 5e-5
+        pidController.setI(1e-8); //velocity: 1e-6
+        pidController.setD(1); //velocity: 0
+        pidController.setIZone(0);
+        pidController.setFF(0);
+        pidController.setOutputRange(-1, 1);
     }
 
     /**
@@ -48,7 +36,7 @@ public class Robot extends TimedRobot {
      */
     @Override
     public void disabledInit() {
-        enabledLooper.stop();
+
     }
 
     /**
@@ -69,15 +57,7 @@ public class Robot extends TimedRobot {
      */
     @Override
     public void autonomousInit() {
-        enabledLooper.stop();
-        driveTrain.resetEncoders();
-        p = new Path(0,0,0);
-        purePursuitTracker = new PurePursuitTracker(p, 20, 20);
-        poseEstimator = PoseEstimator.getInstance();
-        p.addSegment(new Vector(0,0), new Vector(0, 100));
-        p.setTargetVelocities(Constants.maxVel, Constants.maxAccel, Constants.maxVelk);
-        p.setCurvature();
-        enabledLooper.start();
+
     }
 
     /**
@@ -85,8 +65,7 @@ public class Robot extends TimedRobot {
      */
     @Override
     public void autonomousPeriodic() {
-        drivePower = purePursuitTracker.update(poseEstimator.getPose(), driveTrain.getVelocity(), driveTrain.getAngle());
-        driveTrain.setOpenLoop(drivePower.getLeft(), drivePower.getRight());
+
     }
 
     /**
@@ -94,8 +73,8 @@ public class Robot extends TimedRobot {
      */
     @Override
     public void teleopInit() {
-        driveTrain.getGyro().reset();
-        enabledLooper.start();
+        //pidController.setReference(5000, ControlType.kVelocity);
+        //pidController.setReference(0, ControlType.kPosition);
     }
 
 
@@ -104,17 +83,25 @@ public class Robot extends TimedRobot {
      */
     @Override
     public void teleopPeriodic() {
-        teleopUpdater.update();
-        //System.out.println("left encoder: "+driveTrain.getLeftDistance());
-        //System.out.println("right encoder: "+driveTrain.getRightDistance());
-        enabledLooper.start();
-        //System.out.println("angle " + driveTrain.getGyro().getAngle());
-        //System.out.println("Connected: " + driveTrain.getGyro().isConnected());
-        System.out.println("right master: " + driveTrain.getRightDistance());
-        System.out.println("left master: " + driveTrain.getLeftDistance());
-        System.out.println();
-        System.out.println("gyro: " + driveTrain.getAngle());
-        //System.out.println("vel: " + driveTrain.getVelocity());
+        //double setpoint = -xboxController.getY(GenericHID.Hand.kRight)*5700;
+        //pidController.setReference(setpoint, ControlType.kVelocity);
+
+        if (xboxController.getYButtonPressed()) {
+            pidController.setReference(500, ControlType.kPosition);
+        }
+        if (xboxController.getAButtonPressed()) {
+            pidController.setReference(0, ControlType.kPosition);
+        }
+
+        /*
+        double output = -xboxController.getY(GenericHID.Hand.kRight);
+        if (Math.abs(output) >= 0.05)
+            sparkMax.set(output);
+        else
+            sparkMax.set(0);
+        */
+        System.out.println("Position: " + sparkMax.getEncoder().getPosition());
+        System.out.println("Velocity: " + sparkMax.getEncoder().getVelocity());
     }
 
     /**
