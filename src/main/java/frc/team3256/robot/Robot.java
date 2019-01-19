@@ -1,5 +1,6 @@
 package frc.team3256.robot;
 
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import edu.wpi.first.wpilibj.TimedRobot;
 import frc.team3256.robot.math.Vector;
 import frc.team3256.robot.odometry.PoseEstimator;
@@ -14,13 +15,13 @@ import frc.team3256.warriorlib.loop.Looper;
 
 public class Robot extends TimedRobot {
 
-    PoseEstimator poseEstimator = new PoseEstimator(new Vector(0,0));
+    //PoseEstimator poseEstimator = new PoseEstimator(new Vector(0,0));
     DriveTrain driveTrain = DriveTrain.getInstance();
     Looper enabledLooper;
     TeleopUpdater teleopUpdater;
     //DrivePower drivePower;
-    Path p;
-    PurePursuitTracker purePursuitTracker;
+    //Path p;
+    //PurePursuitTracker purePursuitTracker;
 
     //ADXRS453_Calibrator gyroCalibrator;
 
@@ -35,10 +36,10 @@ public class Robot extends TimedRobot {
     public void robotInit() {
         enabledLooper = new Looper(1.0/200.0);
 
-        enabledLooper.addLoops(driveTrain, poseEstimator);
+        enabledLooper.addLoops(driveTrain/*, poseEstimator*/);
         teleopUpdater = new TeleopUpdater();
+
         //gyroCalibrator = new ADXRS453_Calibrator(driveTrain.getGyro());
-        teleopUpdater = new TeleopUpdater();
         /*driveTrain.getGyro().initGyro();
         driveTrain.getGyro().calibrate();*/
     }

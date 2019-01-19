@@ -60,8 +60,8 @@ public class Elevator extends SubsystemBase {
         hallEffect.setUpSourceEdge(false, true);
         hallEffect.enableInterrupts();
 
-        master = TalonSRXUtil.generateGenericTalon(Constants.kElevatorMaster);
-        slave = TalonSRXUtil.generateSlaveTalon(Constants.kElevatorSlave, Constants.kElevatorMaster);
+        //master = TalonSRXUtil.generateGenericTalon(Constants.kElevatorMaster);
+        //slave = TalonSRXUtil.generateSlaveTalon(Constants.kElevatorSlave, Constants.kElevatorMaster);
 
 
         TalonSRXUtil.configMagEncoder(master);

@@ -31,11 +31,11 @@ public class PoseEstimator extends SubsystemBase {
 
     @Override
     public void update(double timestamp) {
-        double distance = driveTrain.getAverageDistance();
+        /*double distance = driveTrain.getAverageDistance();
         double heading = driveTrain.getAngle();
         double updatedX = distance * Math.cos(heading);
         double updatedY = distance * Math.sin(heading);
-        currPos = new Vector(updatedX, updatedY);
+        currPos = new Vector(updatedX, updatedY);*/
     }
 
     @Override

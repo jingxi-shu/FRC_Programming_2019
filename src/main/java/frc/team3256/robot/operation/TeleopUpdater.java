@@ -18,12 +18,12 @@ public class TeleopUpdater {
         xboxController = new XboxController(0);
         driveTrain = DriveTrain.getInstance();
         //hatchIntake = HatchIntake.getInstance();
-        cargoIntake = CargoIntake.getInstance();
+        //cargoIntake = CargoIntake.getInstance();
     }
 
     public void update(){
         //hatchIntake.update(Timer.getFPGATimestamp());
-        cargoIntake.update(Timer.getFPGATimestamp());
+        //cargoIntake.update(Timer.getFPGATimestamp());
 
         //Drivetrain subsystem
 
@@ -46,7 +46,7 @@ public class TeleopUpdater {
         boolean quickTurn = driveConfigImplementation.getQuickTurn();
 
         DrivePower drivePower = DriveTrain.curvatureDrive(throttle, turn, quickTurn, highGear);
-        driveTrain.setHighGear(drivePower.highGear());
+        //driveTrain.setHighGear(drivePower.highGear());
         driveTrain.setOpenLoop(drivePower.getLeft(), drivePower.getRight());
 
         if (driveTrain.leftSlave.getOutputCurrent() > 10 || driveTrain.leftSlave.getOutputCurrent() > 10)

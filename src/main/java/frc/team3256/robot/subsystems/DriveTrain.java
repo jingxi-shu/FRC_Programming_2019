@@ -18,8 +18,8 @@ import frc.team3256.warriorlib.subsystem.SubsystemBase;
 public class DriveTrain extends SubsystemBase implements Loop {
 
     private static DriveTrain instance;
-    public WPI_TalonSRX leftMaster, rightMaster, leftSlave, rightSlave;//, leftSlave2, rightSlave2;
-    private DoubleSolenoid shifter;
+    public WPI_TalonSRX leftMaster, rightMaster, leftSlave, rightSlave/*, leftSlave2, rightSlave2*/;
+    //private DoubleSolenoid shifter;
     private boolean init = false;
     private AnalogGyro gyro;
     static double quickStopAccumulator = 0.0; //temporary curv. drive
@@ -53,7 +53,7 @@ public class DriveTrain extends SubsystemBase implements Loop {
         leftSlave.setStatusFramePeriod(StatusFrame.Status_1_General, (int)(1000*Constants.loopTime), 0);
         rightSlave.setStatusFramePeriod(StatusFrame.Status_1_General, (int)(1000*Constants.loopTime), 0);
 
-        shifter = new DoubleSolenoid(Constants.kShifterForward, Constants.kShifterReverse);
+        //shifter = new DoubleSolenoid(Constants.kShifterForward, Constants.kShifterReverse);
 
         TalonSRXUtil.configMagEncoder(leftMaster);
         TalonSRXUtil.configMagEncoder(rightMaster);
@@ -63,7 +63,7 @@ public class DriveTrain extends SubsystemBase implements Loop {
         leftMaster.setSensorPhase(false);
         rightMaster.setSensorPhase(false);
         //rightSlave2 = TalonSRXUtil.generateSlaveTalon(Constants.kRightDriveSlave2, Constants.kRightDriveMaster);
-        //gyro.calibrate();
+        gyro.calibrate();
         rightMaster.setInverted(true);
         rightSlave.setInverted(InvertType.FollowMaster);
 
@@ -81,9 +81,9 @@ public class DriveTrain extends SubsystemBase implements Loop {
             rightMaster.enableVoltageCompensation(false);
             leftSlave.enableVoltageCompensation(false);
             rightSlave.enableVoltageCompensation(false);
-//            leftSlave2.enableVoltageCompensation(false);
+  //          leftSlave2.enableVoltageCompensation(false);
 //            rightSlave2.enableVoltageCompensation(false);
-            TalonSRXUtil.setBrakeMode(leftMaster, leftSlave, rightMaster, rightSlave);
+            TalonSRXUtil.setBrakeMode(leftMaster/*, leftSlave, rightMaster, rightSlave*/);
             init = true;
         }
         leftMaster.set(ControlMode.PercentOutput, leftPower);
@@ -242,9 +242,9 @@ public class DriveTrain extends SubsystemBase implements Loop {
         return Math.max(Math.min(val, 1.0), -1.0);
     }
 
-    public void setHighGear(boolean highGear) {
+   /* public void setHighGear(boolean highGear) {
         shifter.set(highGear ? DoubleSolenoid.Value.kForward : DoubleSolenoid.Value.kReverse);
-    }
+    }*/
 
 
 }
