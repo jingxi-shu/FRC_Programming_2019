@@ -25,8 +25,8 @@ public class PurePursuitTracker {
         this.stopDistance = stopDistance;
     }
 
-    private double calculateFeedForward(double targetVel, double currVel, boolean right) {
-        double targetAcc = (targetVel - currVel)/(Constants.loopTime);
+    private double calculateFeedForward(double targetVel, double nextVel, boolean right) {
+        double targetAcc = (nextVel - targetVel)/(Constants.loopTime);
         targetAcc = Range.clip(targetAcc, -maxAccel, maxAccel);
         double rateLimitedVel = rateLimiter(targetVel, maxAccel, right);
         return (Constants.kV * rateLimitedVel) + (Constants.kA * targetAcc);
@@ -49,9 +49,14 @@ public class PurePursuitTracker {
                 break;
             }
         }
+        System.out.println("lookahead pt: " + lookaheadPt);
         double curvature = p.calculateCurvatureLookAheadArc(currPos, heading, lookaheadPt, lookaheadDistance);
+        System.out.println("closest point indx" + getClosestPointIndex(currPos));
+        System.out.println("closest point vel "+p.robotPath.get(getClosestPointIndex(currPos)).getVelocity());
         double leftTargetVel = getLeftTargetVelocity(p.robotPath.get(getClosestPointIndex(currPos)).getVelocity(), curvature);
         double rightTargetVel = getRightTargetVelocity(p.robotPath.get(getClosestPointIndex(currPos)).getVelocity(), curvature);
+        System.out.println("left target Vel: " + leftTargetVel);
+        System.out.println("right target Vel: " + rightTargetVel);
         if (leftTargetVel > maxVelocity) {
             double ratio = rightTargetVel / leftTargetVel;
             leftTargetVel = maxVelocity;
@@ -62,8 +67,11 @@ public class PurePursuitTracker {
             rightTargetVel = maxVelocity;
             leftTargetVel = maxVelocity * ratio;
         }
-        double rightFF = calculateFeedForward(rightTargetVel, p.robotPath.get(getClosestPointIndex(currPos) - 1).getVelocity(), true);
-        double leftFF = calculateFeedForward(leftTargetVel, currVel, false);
+        int idx = getClosestPointIndex(currPos) + 1;
+        if (idx >= p.robotPath.size())
+            idx = p.robotPath.size()-1;
+        double rightFF = calculateFeedForward(rightTargetVel, p.robotPath.get(idx).getVelocity(), true);
+        double leftFF = calculateFeedForward(leftTargetVel, p.robotPath.get(idx).getVelocity(), false);
         double rightFB = calculateFeedback(rightTargetVel, currVel);
         double leftFB = calculateFeedback(leftTargetVel, currVel);
         System.out.println(leftFF);
@@ -90,7 +98,7 @@ public class PurePursuitTracker {
 
         System.out.println("Distance Left: " + (getTotalPathDistance() - getCurrDistance(getClosestPointIndex(currPos))));
 
-        return new DrivePower(leftOutput, rightOutput, false);
+        return new DrivePower(leftOutput, rightOutput, true);
 //        //run right motor to right output
 //        //run left motor to left output
     }
@@ -145,14 +153,16 @@ public class PurePursuitTracker {
 
 
     private int getClosestPointIndex(Vector currPos) {
+        System.out.println("curr pos "+currPos);
         double shortestDistance = Double.MAX_VALUE;
         int closestPoint = 0;
         for (int i = lastClosestPt; i < p.robotPath.size(); i++) {
-            if (Vector.dist(p.robotPath.get(i), currPos) < shortestDistance) {
-                closestPoint = i;
-                shortestDistance = Vector.dist(p.robotPath.get(i), currPos);
+                if (Vector.dist(p.robotPath.get(i), currPos) < shortestDistance) {
+                    closestPoint = i;
+                    shortestDistance = Vector.dist(p.robotPath.get(i), currPos);
             }
         }
+        System.out.println("closest point "+p.robotPath.get(closestPoint));
         lastClosestPt = closestPoint;
         return closestPoint;
 
@@ -170,6 +180,7 @@ public class PurePursuitTracker {
     }
 
     private double getCurrDistance(int point) {
+        System.out.println("point "+point);
         double distance = 0;
         for (int i = point; i >= 1; i--) {
             distance += Vector.dist(p.robotPath.get(i), p.robotPath.get(i - 1));
@@ -189,12 +200,16 @@ public class PurePursuitTracker {
 
 
     private double getLeftTargetVelocity(double targetRobotVelocity, double curvature) { //target velocity is from closest point on path
-        return targetRobotVelocity * ((2 + (Constants.robotTrack * curvature)))/2;
+        double temp = (Constants.robotTrack * curvature)/2;
+        System.out.println("left temp: " + temp);
+        System.out.println("target vel " + targetRobotVelocity);
+        return targetRobotVelocity + temp * targetRobotVelocity;
     }
 
     private double getRightTargetVelocity(double targetRobotVelocity, double curvature) {
-        System.out.println("trv: " + targetRobotVelocity);
-        System.out.println("curvature " + curvature);
+        double temp = (Constants.robotTrack * curvature)/2;
+        System.out.println("right temp: " + temp);
+        System.out.println("target vel " + targetRobotVelocity);
         return targetRobotVelocity * ((2 - (Constants.robotTrack * curvature)))/2;
     }
 

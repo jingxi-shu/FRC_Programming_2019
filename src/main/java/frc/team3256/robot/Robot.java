@@ -1,5 +1,6 @@
 package frc.team3256.robot;
 
+import com.ctre.phoenix.sensors.PigeonIMU;
 import edu.wpi.first.wpilibj.TimedRobot;
 import frc.team3256.robot.math.Vector;
 import frc.team3256.robot.odometry.PoseEstimator;
@@ -18,11 +19,9 @@ public class Robot extends TimedRobot {
     DriveTrain driveTrain = DriveTrain.getInstance();
     Looper enabledLooper;
     TeleopUpdater teleopUpdater;
-    //DrivePower drivePower;
+    DrivePower drivePower;
     Path p;
     PurePursuitTracker purePursuitTracker;
-
-    //ADXRS453_Calibrator gyroCalibrator;
 
 
 
@@ -38,7 +37,7 @@ public class Robot extends TimedRobot {
         enabledLooper.addLoops(driveTrain, poseEstimator);
         teleopUpdater = new TeleopUpdater();
         //gyroCalibrator = new ADXRS453_Calibrator(driveTrain.getGyro());
-        teleopUpdater = new TeleopUpdater();
+        driveTrain.resetGyro();
         /*driveTrain.getGyro().initGyro();
         driveTrain.getGyro().calibrate();*/
     }
@@ -69,15 +68,15 @@ public class Robot extends TimedRobot {
      */
     @Override
     public void autonomousInit() {
-        /*enabledLooper.stop();
+        enabledLooper.stop();
         driveTrain.resetEncoders();
         p = new Path(0,0,0);
         purePursuitTracker = new PurePursuitTracker(p, 20, 20);
-        poseEstimator = PoseEstimator.getInstance();
+        poseEstimator.update(Constants.loopTime);
         p.addSegment(new Vector(0,0), new Vector(0, 100));
         p.setTargetVelocities(Constants.maxVel, Constants.maxAccel, Constants.maxVelk);
         p.setCurvature();
-        enabledLooper.start();*/
+        enabledLooper.start();
     }
 
     /**
@@ -85,8 +84,9 @@ public class Robot extends TimedRobot {
      */
     @Override
     public void autonomousPeriodic() {
-        /*drivePower = purePursuitTracker.update(poseEstimator.getPose(), driveTrain.getVelocity(), driveTrain.getAngle());
-        driveTrain.setOpenLoop(drivePower.getLeft(), drivePower.getRight());*/
+        System.out.println("gyro "+driveTrain.getAngle());
+        drivePower = purePursuitTracker.update(poseEstimator.getPose(), driveTrain.getVelocity(), driveTrain.getAngle());
+        driveTrain.setOpenLoop(drivePower.getLeft(), drivePower.getRight());
     }
 
     /**
@@ -107,10 +107,10 @@ public class Robot extends TimedRobot {
         teleopUpdater.update();
         //System.out.println("left encoder: "+driveTrain.getLeftDistance());
         //System.out.println("right encoder: "+driveTrain.getRightDistance());
-        //System.out.println("angle " + driveTrain.getGyro().getAngle());
+        //System.out.println("angle " + driveTrain.getAngle());
         //System.out.println("Connected: " + driveTrain.getGyro().isConnected());
 
-        /*
+
         System.out.println("right master: " + driveTrain.getRightDistance());
         System.out.println("left master: " + driveTrain.getLeftDistance());
         System.out.println();

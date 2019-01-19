@@ -5,6 +5,8 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.InvertType;
 import com.ctre.phoenix.motorcontrol.StatusFrame;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
+import com.ctre.phoenix.sensors.PigeonIMU;
+import com.ctre.phoenix.sensors.PigeonIMU_StatusFrame;
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import edu.wpi.first.wpilibj.AnalogGyro;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
@@ -21,7 +23,7 @@ public class DriveTrain extends SubsystemBase implements Loop {
     public WPI_TalonSRX leftMaster, rightMaster, leftSlave, rightSlave;//, leftSlave2, rightSlave2;
     private DoubleSolenoid shifter;
     private boolean init = false;
-    private AnalogGyro gyro;
+    private PigeonIMU gyro;
     static double quickStopAccumulator = 0.0; //temporary curv. drive
     static double kQuickStopAlpha = 0.1;
     static double kQuickStopScalar = 2.0;
@@ -33,8 +35,9 @@ public class DriveTrain extends SubsystemBase implements Loop {
     }
 
     private DriveTrain() {
-        gyro = new AnalogGyro(0);
-        gyro.initGyro();
+        gyro = new PigeonIMU(0);
+        gyro.configFactoryDefault();
+        gyro.setStatusFramePeriod(PigeonIMU_StatusFrame.CondStatus_9_SixDeg_YPR, 5, Constants.kGyroTimeoutMs);
         leftMaster = TalonSRXUtil.generateGenericTalon(Constants.kLeftDriveMaster);
         leftSlave = TalonSRXUtil.generateSlaveTalon(Constants.kLeftDriveSlave, Constants.kLeftDriveMaster);
         //leftSlave2 = TalonSRXUtil.generateSlaveTalon(Constants.kLeftDriveSlave2, Constants.kLeftDriveMaster);
@@ -47,29 +50,20 @@ public class DriveTrain extends SubsystemBase implements Loop {
         leftMaster.setStatusFramePeriod(StatusFrame.Status_1_General, (int)(1000*Constants.loopTime), 0);
         rightMaster.setStatusFramePeriod(StatusFrame.Status_1_General, (int)(1000*Constants.loopTime), 0);
 
-        leftSlave.setStatusFramePeriod(StatusFrame.Status_2_Feedback0, (int)(1000*Constants.loopTime), 0);
-        rightSlave.setStatusFramePeriod(StatusFrame.Status_2_Feedback0, (int)(1000*Constants.loopTime), 0);
-
-        leftSlave.setStatusFramePeriod(StatusFrame.Status_1_General, (int)(1000*Constants.loopTime), 0);
-        rightSlave.setStatusFramePeriod(StatusFrame.Status_1_General, (int)(1000*Constants.loopTime), 0);
-
         shifter = new DoubleSolenoid(Constants.kShifterForward, Constants.kShifterReverse);
 
         TalonSRXUtil.configMagEncoder(leftMaster);
         TalonSRXUtil.configMagEncoder(rightMaster);
-        TalonSRXUtil.configMagEncoder(leftSlave);
-        TalonSRXUtil.configMagEncoder(rightSlave);
 
         leftMaster.setSensorPhase(false);
         rightMaster.setSensorPhase(false);
         //rightSlave2 = TalonSRXUtil.generateSlaveTalon(Constants.kRightDriveSlave2, Constants.kRightDriveMaster);
         //gyro.calibrate();
-        rightMaster.setInverted(true);
+        rightMaster.setInverted(false);
         rightSlave.setInverted(InvertType.FollowMaster);
 
-        leftMaster.setInverted(false);
+        leftMaster.setInverted(true);
         leftSlave.setInverted(InvertType.FollowMaster);
-
 
         leftMaster.setSelectedSensorPosition(0, 0,100);
         rightMaster.setSelectedSensorPosition(0, 0,100);
@@ -103,7 +97,6 @@ public class DriveTrain extends SubsystemBase implements Loop {
 
     @Override
     public void init(double timestamp) {
-        gyro.reset();
     }
 
     @Override
@@ -166,17 +159,21 @@ public class DriveTrain extends SubsystemBase implements Loop {
         return sensorUnitsToInches(sensorUnits*10.0);
     }
 
-    public AnalogGyro getGyro(){
+    public PigeonIMU getGyro(){
         return gyro;
     }
 
     public double getAngle(){
         //Return negative value of the gyro, because the gyro returns
-        return -gyro.getAngle();
+        double[] result = new double[3];
+        gyro.getYawPitchRoll(result);
+        return -result[0];
     }
 
     public void resetGyro(){
-        gyro.reset();
+        gyro.setYaw(0, Constants.kGyroTimeoutMs);
+        gyro.setAccumZAngle(0, Constants.kGyroTimeoutMs);
+        System.out.println("YAW" + getAngle());
     }
 
     public static DrivePower curvatureDrive(double throttle, double turn, boolean quickTurn, boolean highGear){

@@ -123,6 +123,7 @@ public class Path {
             distance = Vector.dist(robotPath.get(i+1), robotPath.get(i));
             double maxReachableVel = Math.sqrt(Math.pow(robotPath.get(i+1).getVelocity(),2) + (2 * maxAccel * distance));
             robotPath.get(i).setVelocity(Math.min(calculateMaxVelocity(robotPath, i, maxVel, k), maxReachableVel));
+            System.out.println("point vel: "+robotPath.get(i).getVelocity());
         }
     }
 
@@ -135,6 +136,7 @@ public class Path {
         double cross = (Math.sin(heading) * (lookahead.x - currPos.x)) - (Math.cos(heading) * (lookahead.y - currPos.y));
         double side = Sign.getSign(cross);
         double curvature = (2 * x)/(Math.pow(lookaheadDistance, 2));
+        System.out.println("curvature "+curvature);
         return curvature * side;
     }
 
