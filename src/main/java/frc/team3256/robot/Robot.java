@@ -2,6 +2,8 @@ package frc.team3256.robot;
 
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.VictorSP;
+import edu.wpi.first.wpilibj.XboxController;
 import frc.team3256.robot.math.Vector;
 import frc.team3256.robot.odometry.PoseEstimator;
 import frc.team3256.robot.operation.TeleopUpdater;
@@ -19,6 +21,8 @@ public class Robot extends TimedRobot {
     DriveTrain driveTrain = DriveTrain.getInstance();
     Looper enabledLooper;
     TeleopUpdater teleopUpdater;
+    XboxController xboxController;
+    VictorSP victorSP;
     //DrivePower drivePower;
     //Path p;
     //PurePursuitTracker purePursuitTracker;
@@ -38,6 +42,8 @@ public class Robot extends TimedRobot {
 
         enabledLooper.addLoops(driveTrain/*, poseEstimator*/);
         teleopUpdater = new TeleopUpdater();
+        xboxController = new XboxController(0);
+        victorSP = new VictorSP(0);
 
         //gyroCalibrator = new ADXRS453_Calibrator(driveTrain.getGyro());
         /*driveTrain.getGyro().initGyro();
@@ -106,6 +112,13 @@ public class Robot extends TimedRobot {
     @Override
     public void teleopPeriodic() {
         teleopUpdater.update();
+
+        if (xboxController.getAButton()){
+            victorSP.set(0.4);
+        }
+        else if (xboxController.getAButtonReleased()){
+            victorSP.set(0);
+        }
         //System.out.println("left encoder: "+driveTrain.getLeftDistance());
         //System.out.println("right encoder: "+driveTrain.getRightDistance());
         //System.out.println("angle " + driveTrain.getGyro().getAngle());
