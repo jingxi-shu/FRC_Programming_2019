@@ -26,21 +26,7 @@ public class TeleopUpdater {
         //cargoIntake.update(Timer.getFPGATimestamp());
 
         //Drivetrain subsystem
-
-        //Arcade Drive
-        /*double throttle = driveConfigImplementation.getThrottle();
-        double turn = driveConfigImplementation.getTurn();
-        if (Math.abs(throttle) <= 0.15) {
-            throttle = 0;
-        }
-        if (Math.abs(turn) <= 0.15) {
-            turn = 0;
-        }
-        double left = throttle + turn;
-        double right = throttle - turn;
-        left = Math.max(-1, Math.min(left, 1));
-        right = Math.max(-1, Math.min(right, 1));*/
-
+        
         double throttle = driveConfigImplementation.getThrottle();
         double turn = driveConfigImplementation.getTurn();
         boolean quickTurn = driveConfigImplementation.getQuickTurn();
