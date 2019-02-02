@@ -13,6 +13,10 @@ public class Robot extends TimedRobot {
 	NetworkTableEntry tx = table.getEntry("tx");
 	NetworkTableEntry ty = table.getEntry("ty");
 	NetworkTableEntry ta = table.getEntry("ta");
+	NetworkTableEntry tv = table.getEntry("tv");
+	NetworkTableEntry ts = table.getEntry("ts");
+	NetworkTableEntry thor = table.getEntry("thor");
+	NetworkTableEntry tvert = table.getEntry("tvert");
 
 	/**
 	 * This function is called when the robot is first started up and should be
@@ -44,9 +48,17 @@ public class Robot extends TimedRobot {
 		double x = tx.getDouble(0.0);
 		double y = ty.getDouble(0.0);
 		double area = ta.getDouble(0.0);
-		System.out.println("LimelightX: " + x);
-		System.out.println("LimelightY: " + y);
-		System.out.println("LimelightArea: " + area + "\n\n\n\n");
+		double skew = ts.getDouble(0.0);
+		double horizontal = thor.getDouble(0.0);
+		double vertical = tvert.getDouble(0.0);
+		boolean validTarget = tv.getDouble(0.0) == 1;
+
+		System.out.println("LimelightX: " + x + "\tLimelightY: " + y);
+		System.out.println("LimelightArea: " + area);
+		System.out.println("LimelightValidTarget: " + validTarget);
+		System.out.println("LimelightSkew: " + skew);
+		System.out.println("LimelightHorizontal: " + horizontal);
+		System.out.println("LimelightVertical: " + vertical);
 	}
 
 	/**
