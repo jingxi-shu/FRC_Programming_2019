@@ -1,39 +1,27 @@
 package frc.team3256.robot.subsystems;
 
-import com.ctre.phoenix.sensors.PigeonIMU;
 import com.revrobotics.*;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.team3256.robot.operations.PIDController;
 import frc.team3256.warriorlib.control.DrivePower;
 import frc.team3256.warriorlib.hardware.SparkMAXUtil;
 import frc.team3256.warriorlib.loop.Loop;
 import frc.team3256.warriorlib.math.Rotation;
 import frc.team3256.warriorlib.subsystem.DriveTrainBase;
-
 import static frc.team3256.robot.constants.DriveTrainConstants.*;
 
 public class DriveTrain extends DriveTrainBase implements Loop {
 
     private static DriveTrain instance;
     private static double prevTurn = 0.0;
-    private CANSparkMax leftMaster, rightMaster, leftSlave, rightSlave;
+    CANSparkMax leftMaster, rightMaster, leftSlave, rightSlave;
     private CANEncoder leftEncoder, rightEncoder;
     private CANPIDController leftPIDController, rightPIDController;
     private DoubleSolenoid shifter;
-    private boolean init = false;
-    private PigeonIMU gyro;
-    private PIDController turnPIDController = new PIDController(kTurnP, kTurnI, kTurnD);
 
     private DriveTrain() {
-        //gyro = new PigeonIMU(14);
-        //gyro.setAccumZAngle(0, 0);
-        //gyro.setYaw(0, 0);
-        //        internalGyro = new ADXRS453_Gyro();
-        //        internalGyro.startCalibrate();
         leftMaster = SparkMAXUtil.generateGenericSparkMAX(kLeftDriveMaster, CANSparkMaxLowLevel.MotorType.kBrushless);
         leftSlave = SparkMAXUtil.generateSlaveSparkMAX(kLeftDriveSlave, CANSparkMaxLowLevel.MotorType.kBrushless, leftMaster);
-        //leftSlave2 = TalonSRXUtil.generateSlaveTalon(kLeftDriveSlave2, kLeftDriveMaster);
         rightMaster = SparkMAXUtil.generateGenericSparkMAX(kRightDriveMaster, CANSparkMaxLowLevel.MotorType.kBrushless);
         rightSlave = SparkMAXUtil.generateSlaveSparkMAX(kRightDriveSlave, CANSparkMaxLowLevel.MotorType.kBrushless, rightMaster);
 
@@ -50,22 +38,10 @@ public class DriveTrain extends DriveTrainBase implements Loop {
 
         SparkMAXUtil.setBrakeMode(leftMaster, leftSlave, rightMaster, rightSlave);
 
-        /*leftMaster.setStatusFramePeriod(StatusFrame.Status_2_Feedback0, (int)(1000*loopTime), 0);
-        rightMaster.setStatusFramePeriod(StatusFrame.Status_2_Feedback0, (int)(1000*loopTime), 0);
-
-        leftMaster.setStatusFramePeriod(StatusFrame.Status_1_General, (int)(1000*loopTime), 0);
-        rightMaster.setStatusFramePeriod(StatusFrame.Status_1_General, (int)(1000*loopTime), 0);
-        */
         shifter = new DoubleSolenoid(15, kShifterForward, kShifterReverse);
-        //shifter = new DoubleSolenoid(15, 3, 4);
 
-        //rightSlave2 = TalonSRXUtil.generateSlaveTalon(kRightDriveSlave2, kRightDriveMaster);
-        //gyro.calibrate();
         rightMaster.setInverted(false); //false
         leftMaster.setInverted(true); //true
-
-//        leftMaster.setClosedLoopRampRate(0.0);
-//        rightMaster.setClosedLoopRampRate(0.0);
     }
 
     public static DriveTrain getInstance() {
@@ -73,13 +49,9 @@ public class DriveTrain extends DriveTrainBase implements Loop {
     }
 
     public static DrivePower curvatureDrive(double throttle, double turn, boolean quickTurn, boolean highGear) {
-        //boolean highGear = true;
-        if (Math.abs(turn) <= 0.15) { //deadband
-            turn = 0;
-        }
-        if (Math.abs(throttle) <= 0.15) {
-            throttle = 0;
-        }
+        throttle = deadband(throttle, 0.15);
+        turn = deadband(turn, 0.15);
+
         double angularPower, overPower;
 
         if (quickTurn) {
@@ -128,64 +100,54 @@ public class DriveTrain extends DriveTrainBase implements Loop {
             left += overPower * (-1.0 - right);
             right = -1.0;
         }
-        //System.out.println("FEEDING LEFT " + left + " RIGHT " + right);
-//        SmartDashboard.putNumber("feed left", left);
-//        SmartDashboard.putNumber("feed riht", right);
+
         return new DrivePower(left, right, highGear);
+    }
+
+    public static DrivePower hButterflyDrive (double throttle, double strafe, boolean quickTurn, boolean highGear) {
+        throttle = deadband(throttle, kDeadband);
+        strafe = deadband(strafe, kDeadband);
+
+        if(quickTurn) {
+            highGear = false;
+        }
+        else {
+
+        }
+
+        return new DrivePower(throttle, strafe, highGear);
     }
 
     public static double clamp(double val) {
         return Math.max(Math.min(val, 1.0), -1.0);
     }
 
-    public void setOpenLoop(double leftPower, double rightPower) {
+    public static double deadband (double val, double deadband) {
+        return Math.abs(val) > deadband ? val : 0.0;
+    }
+
+    public void setOpenLoopCurve(double leftPower, double rightPower) {
         leftPower *= leftPower * leftPower;
         rightPower *= rightPower * rightPower;
         leftPIDController.setReference(leftPower*kVelocityMaxRPM, ControlType.kVelocity);
         rightPIDController.setReference(rightPower*kVelocityMaxRPM, ControlType.kVelocity);
     }
 
-    public void setHangDrive(double leftPower, double rightPower) {
-        //leftHangDrive.set(ControlMode.PercentOutput, leftPower);
-        //rightHangDrive.set(ControlMode.PercentOutput, rightPower);
-    }
 
-    @Override
-    public void outputToDashboard() {
-        SmartDashboard.putNumber("right encoder", getRightDistance());
-        SmartDashboard.putNumber("left encoder", getLeftDistance());
-    }
-
-    @Override
-    public void zeroSensors() {
+    public void setOpenLoopHButterfly(double throttlePower, double strafePower) {
+        //Squared powers for smoother control at lower velocities
+        throttlePower *= throttlePower * throttlePower;
+        strafePower *= strafePower * strafePower;
+        leftPIDController.setReference(throttlePower*kVelocityMaxRPM, ControlType.kVelocity);
 
     }
 
-    @Override
-    public void init(double timestamp) {
+    public double getLeftDistance() { return rotationsToInches(leftEncoder.getPosition()) / kGearRatio; }
+
+    public double getRightDistance() {
+        return rotationsToInches(rightEncoder.getPosition()) / kGearRatio;
     }
 
-    @Override
-    public void update(double timestamp) {
-        this.outputToDashboard();
-    }
-
-    @Override
-    public void end(double timestamp) {
-        setOpenLoop(0, 0);
-    }
-
-    public double getLeftCurrent() {
-        return leftMaster.getOutputCurrent();
-    }
-
-    public double getRightCurrent() {
-        return rightMaster.getOutputCurrent();
-    }
-
-    /**
-     * Native NEO unit is RPM so convert it to inches per second
-     */
     public double getLeftVelocity() {
         return rpmToInchesPerSec(leftEncoder.getVelocity()) / kGearRatio;
     }
@@ -202,12 +164,9 @@ public class DriveTrain extends DriveTrainBase implements Loop {
         return rightEncoder.getVelocity();
     }
 
-    public double getLeftDistance() {
-        return rotationsToInches(leftEncoder.getPosition()) / kGearRatio;
-    }
-
-    public double getRightDistance() {
-        return rotationsToInches(rightEncoder.getPosition()) / kGearRatio;
+    public void setVelocityClosedLoop(double leftVelInchesPerSec, double rightVelInchesPerSec) {
+        leftPIDController.setReference(inchesPerSecToRPM(leftVelInchesPerSec) * kGearRatio, ControlType.kVelocity);
+        rightPIDController.setReference(inchesPerSecToRPM(rightVelInchesPerSec) * kGearRatio, ControlType.kVelocity);
     }
 
     public void resetEncoders() {
@@ -231,40 +190,14 @@ public class DriveTrain extends DriveTrainBase implements Loop {
         return rotationsToInches(rpm) / 60D;
     }
 
-    public PigeonIMU getGyro() {
-        return gyro;
-    }
+    public double getAngle() { return 0; }
 
-    public double getAngle() {
-        return 0;
-//        double[] ypr = new double[3];
-//        gyro.getYawPitchRoll(ypr);
-//        return ypr[0];
-        //        return -internalGyro.getAngle();
-    }
+    public Rotation getRotationAngle() { return Rotation.fromDegrees(getAngle() + 90); }
 
-    public Rotation getRotationAngle() {
-        return Rotation.fromDegrees(getAngle() + 90);
-    }
-
-    public void resetGyro() {
-        //gyro.setYaw(0, 0);
-        //gyro.setAccumZAngle(0, 0);
-        //        internalGyro.reset();
-    }
+    public void resetGyro() { }
 
     public void setHighGear(boolean highGear) {
         shifter.set(highGear ? DoubleSolenoid.Value.kForward : DoubleSolenoid.Value.kReverse);
-    }
-
-    public void setVelocityClosedLoop(double leftVelInchesPerSec, double rightVelInchesPerSec) {
-        /*double leftOutput = leftVelocityPIDController.calculatePID(leftVelInchesPerSec, getLeftVelocity());
-        double rightOutput = rightVelocityPIDController.calculatePID(rightVelInchesPerSec, getRightVelocity());
-        leftMaster.set(ControlMode.Velocity,inchesPerSecToSensorUnits(leftOutput));
-        rightMaster.set(ControlMode.Velocity,inchesPerSecToSensorUnits(rightOutput));*/
-
-        leftPIDController.setReference(inchesPerSecToRPM(leftVelInchesPerSec) * kGearRatio, ControlType.kVelocity);
-        rightPIDController.setReference(inchesPerSecToRPM(rightVelInchesPerSec) * kGearRatio, ControlType.kVelocity);;
     }
 
     public void setBrakeMode() {
@@ -275,4 +208,21 @@ public class DriveTrain extends DriveTrainBase implements Loop {
         SparkMAXUtil.setCoastMode(leftMaster, leftSlave, rightMaster, rightSlave);
     }
 
+    @Override
+    public void zeroSensors() { }
+
+    @Override
+    public void init(double timestamp) { }
+
+    @Override
+    public void update(double timestamp) { this.outputToDashboard(); }
+
+    @Override
+    public void end(double timestamp) { setOpenLoopCurve(0, 0); }
+
+    @Override
+    public void outputToDashboard() {
+        SmartDashboard.putNumber("right encoder", getRightDistance());
+        SmartDashboard.putNumber("left encoder", getLeftDistance());
+    }
 }

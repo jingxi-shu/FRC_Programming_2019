@@ -1,13 +1,9 @@
 package frc.team3256.robot.teleop.control;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.team3256.robot.subsystems.CargoIntake;
-import frc.team3256.robot.subsystems.HatchPivot;
 import frc.team3256.warriorlib.control.XboxListenerBase;
 
 public class DriverControlScheme extends XboxListenerBase {
-    protected CargoIntake cargoIntake = CargoIntake.getInstance();
-    protected HatchPivot hatchPivot = HatchPivot.getInstance();
 
     private boolean highGear = false;
     private boolean quickTurn = false;
@@ -143,26 +139,16 @@ public class DriverControlScheme extends XboxListenerBase {
     }
 
     @Override
-    public void onLeftShoulderPressed() {
-        cargoIntake.exhaust();
-    }
+    public void onLeftShoulderPressed() { }
 
     @Override
-    public void onLeftShoulderReleased() {
-        cargoIntake.setIntakePower(0);
-    }
+    public void onLeftShoulderReleased() { }
 
     @Override
-    public void onRightShoulderPressed() {
-        hatchPivot.setPositionCargoIntake();
-        cargoIntake.intake();
-    }
+    public void onRightShoulderPressed() { }
 
     @Override
-    public void onRightShoulderReleased() {
-        cargoIntake.setIntakePower(0);
-        hatchPivot.setPositionDeploy();
-    }
+    public void onRightShoulderReleased() { }
 
     @Override
     public void onLeftTrigger(double value) {

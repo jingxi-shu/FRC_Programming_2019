@@ -3,6 +3,7 @@ package frc.team3256.robot.constants;
 public class DriveTrainConstants {
     //Curvature Drive
     public static final double kQuickTurnDeltaLimit = 2.0 / 1000.0 / 12.0 * 20.0;
+    public static final double kDeadband = 0.15;
     //CAN
     public static final int kLeftDriveMaster = 3;
     public static final int kLeftDriveSlave = 4;
