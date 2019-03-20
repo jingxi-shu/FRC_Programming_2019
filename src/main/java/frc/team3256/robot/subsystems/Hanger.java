@@ -26,7 +26,7 @@ public class Hanger extends SubsystemBase implements Loop {
     private WantedState mWantedState = WantedState.WANTS_TO_RETRACT;
 
     public void getHangerState() {
-        return m
+        //return m
     }
     public void setWantedState(WantedState wantedState){
         this.mWantedState = wantedState;
