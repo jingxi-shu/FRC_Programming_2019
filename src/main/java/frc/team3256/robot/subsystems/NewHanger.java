@@ -6,8 +6,8 @@ import frc.team3256.warriorlib.loop.Loop;
 import frc.team3256.warriorlib.subsystem.SubsystemBase;
 import static frc.team3256.robot.constants.DriveTrainConstants.*;
 
-public class Hanger extends SubsystemBase implements Loop {
-    private static Hanger instance;
+public class NewHanger extends SubsystemBase implements Loop {
+    private static NewHanger instance;
     private DoubleSolenoid hang;
 
     private enum HangerState {
@@ -32,11 +32,11 @@ public class Hanger extends SubsystemBase implements Loop {
         mWantedState = wantedState;
     }
 
-    private Hanger() {
+    private NewHanger() {
         hang = new DoubleSolenoid(DriveTrainConstants.pcmId, kHangerForward, kHangerReverse);
     }
 
-    public static Hanger getInstance() { return instance == null ? instance = new Hanger() : instance; }
+    public static NewHanger getInstance() { return instance == null ? instance = new NewHanger() : instance; }
 
     private HangerState handleHang() {
         if (stateChanged) {
