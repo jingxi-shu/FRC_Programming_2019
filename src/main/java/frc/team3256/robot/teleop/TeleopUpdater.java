@@ -1,6 +1,7 @@
 package frc.team3256.robot.teleop;
 
 import frc.team3256.robot.subsystems.DriveTrain;
+import frc.team3256.robot.subsystems.NewCargoIntake;
 import frc.team3256.robot.subsystems.NewElevator;
 import frc.team3256.robot.subsystems.NewPivot;
 import frc.team3256.robot.teleop.control.*;
@@ -13,16 +14,15 @@ public class TeleopUpdater {
     private IManipulatorController manipulatorController = XboxManipulatorController.getInstance();
     private NewElevator mElevator = NewElevator.getInstance();
     private NewPivot mPivot = NewPivot.getInstance();
-    private boolean prevIntakeHatch = false;
-    private boolean prevOuttakeHatch = false;
-    private boolean prevManualControl = false;
+    private NewCargoIntake mCargoIntake = NewCargoIntake.getInstance();
 
     private static TeleopUpdater instance;
     public static TeleopUpdater getInstance() {
         return instance == null ? instance = new TeleopUpdater() : instance;
     }
 
-    private boolean isManualControl = false;
+    private boolean isElevatorManualControl = false;
+    private boolean isPivotManualControl = false;
 
     public void handleDrive() {
         driveTrain.setBrakeMode();
@@ -52,22 +52,22 @@ public class TeleopUpdater {
         boolean finishOuttakeHatch = manipulatorController.shouldHatchFinishOuttake();
 
         if (elevatorThrottle > 0) {
-            isManualControl = true;
+            isElevatorManualControl = true;
             mElevator.setWantedState(NewElevator.WantedState.WANTS_TO_MANUAL_UP);
         } else if (elevatorThrottle < 0) {
-            isManualControl = true;
+            isElevatorManualControl = true;
             mElevator.setWantedState(NewElevator.WantedState.WANTS_TO_MANUAL_DOWN);
         } else if (goToHighRocket && mElevator.isHomed()) {
-            isManualControl = false;
+            isElevatorManualControl = false;
             mElevator.setWantedState(NewElevator.WantedState.WANTS_TO_HIGH_CARGO);
         } else if (goToMidRocket && mElevator.isHomed()) {
-            isManualControl = false;
+            isElevatorManualControl = false;
             mElevator.setWantedState(NewElevator.WantedState.WANTS_TO_MID_CARGO);
         } else if (goToLowRocket && mElevator.isHomed()) {
-            isManualControl = false;
+            isElevatorManualControl = false;
             mElevator.setWantedState(NewElevator.WantedState.WANTS_TO_LOW_CARGO);
         } else {
-            if (isManualControl) {
+            if (isElevatorManualControl) {
                 mElevator.setWantedState(NewElevator.WantedState.WANTS_TO_HOLD);
             } else if (mElevator.atClosedLoopTarget()) {
                 mElevator.setWantedState(NewElevator.WantedState.WANTS_TO_HOLD);
@@ -78,41 +78,48 @@ public class TeleopUpdater {
 
         if (pivotThrottle > 0) {
             System.out.println("Up");
-            isManualControl = true;
+            isPivotManualControl = true;
             mPivot.setWantedState(NewPivot.WantedState.WANTS_TO_MANUAL_UP);
         } else if (pivotThrottle < 0) {
-            isManualControl = true;
+            isPivotManualControl = true;
             System.out.println("Down");
             mPivot.setWantedState(NewPivot.WantedState.WANTS_TO_MANUAL_DOWN);
-        } else if (shouldCargoIntake) {
-            isManualControl = false;
-            mPivot.setWantedState(NewPivot.WantedState.WANTS_TO_INTAKE_POS);
         } else {
-            if (isManualControl && !prevManualControl) {
+            if (isPivotManualControl) {
                 mPivot.setWantedState(NewPivot.WantedState.WANTS_TO_HOLD);
+            } else if (shouldCargoIntake) {
+                mPivot.setWantedState(NewPivot.WantedState.WANTS_TO_INTAKE_POS);
+                mCargoIntake.setWantedState(NewCargoIntake.WantedState.WANTS_TO_INTAKE);
             } else if (mPivot.atClosedLoopTarget()) {
-                mPivot.setWantedState(NewPivot.WantedState.WANTS_TO_DEPLOY_POS);
+                mPivot.setWantedState(NewPivot.WantedState.WANTS_TO_HOLD);
+                mCargoIntake.setWantedState(NewCargoIntake.WantedState.WANTS_TO_STOP);
             }
         }
 
         if (startIntakeHatch) {
             mPivot.setWantedState(NewPivot.WantedState.WANTS_TO_DEPLOY_HATCH);
             mElevator.setWantedState(NewElevator.WantedState.WANTS_TO_START_INTAKE_HATCH);
+            isElevatorManualControl = false;
+            isPivotManualControl = false;
         }
         else if (startOuttakeHatch) {
             mPivot.setWantedState(NewPivot.WantedState.WANTS_TO_DEPLOY_HATCH);
+            isElevatorManualControl = false;
+            isPivotManualControl = false;
         }
 
         if (finishIntakeHatch) {
             System.out.println("WANTS TO FINISH");
             mElevator.setWantedState(NewElevator.WantedState.WANTS_TO_FINISH_INTAKE_HATCH);
             mPivot.setWantedState(NewPivot.WantedState.WANTS_TO_ELEVATOR_WAIT);
+            isElevatorManualControl = false;
+            isPivotManualControl = false;
         }
         else if (finishOuttakeHatch) {
             mElevator.setWantedState(NewElevator.WantedState.WANTS_TO_FINISH_OUTTAKE_HATCH);
             mPivot.setWantedState(NewPivot.WantedState.WANTS_TO_ELEVATOR_WAIT);
+            isElevatorManualControl = false;
+            isPivotManualControl = false;
         }
-
-        prevManualControl = isManualControl;
     }
 }
