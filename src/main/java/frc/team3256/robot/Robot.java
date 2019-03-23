@@ -25,7 +25,7 @@ public class Robot extends TimedRobot {
 	private Hanger hanger = Hanger.getInstance();
 	private CargoIntake intake = CargoIntake.getInstance();
 
-	private RobotCompressor robotCompressor = RobotCompressor.getInstance();
+	private Sensors sensors = Sensors.getInstance();
 
 	// Pure Pursuit
 	private PurePursuitTracker purePursuitTracker = PurePursuitTracker.getInstance();
@@ -71,19 +71,20 @@ public class Robot extends TimedRobot {
 		SmartDashboard.putString("ControlScheme", "Cargo");
 
 		// Pneumatics
-		robotCompressor.turnOn();
+		sensors.turnOnCompressor();
 		pivot.releaseBrake();
 		pivot.setHatchArm(false);
 
 		teleopUpdater = TeleopUpdater.getInstance();
 
-		subsystemManager.addSubsystems(driveTrain, elevator, intake, pivot, robotCompressor);
+		subsystemManager.addSubsystems(driveTrain, elevator, intake, pivot, sensors);
 
 		autoChooser.setDefaultOption("Do Nothing", new DoNothingAutoMode());
 		autoChooser.addOption("Baseline", new BaselineAutoMode());
 		autoChooser.addOption("Left Single Hatch Auto", new LeftSingleHatchAutoMode());
 		autoChooser.addOption("Left Spline Cargo Rocket", new LeftBackwardsDoubleHatchSpline());
 		autoChooser.addOption("Left Turn Cargo Rocket", new LeftRocketCargoDoubleHatchAutoMode());
+		autoChooser.addOption("Right Single Hatch Auto", new RightSingleHatchAutoMode());
 		//autoChooser.addOption("Right Single Hatch Auto", new LeftSingleHatchAutoMode());
 
 		SmartDashboard.putData("Auto Chooser", autoChooser);
@@ -108,7 +109,7 @@ public class Robot extends TimedRobot {
 		//elevator.runZeroPower();
 		//cargoIntake.setIntakePower(0);
 		driveTrain.runZeroPower();
-		robotCompressor.turnOff();
+		sensors.turnOffCompressor();
 		driveTrain.resetEncoders();
 		driveTrain.resetGyro();
 		poseEstimator.reset();
@@ -186,7 +187,7 @@ public class Robot extends TimedRobot {
 	 */
 	@Override
 	public void teleopInit() {
-		robotCompressor.turnOn();
+		sensors.turnOnCompressor();
 		driveTrain.setBrakeMode();
 		enabledLooper.start();
 		driveTrain.resetEncoders();
