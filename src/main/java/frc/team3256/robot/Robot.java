@@ -58,7 +58,7 @@ public class Robot extends TimedRobot {
 		driveTrain.resetGyro();
 		pivot.zeroSensors();
 
-		enabledLooper.addLoops(driveTrain, pivot, elevator, intake);
+		enabledLooper.addLoops(driveTrain, pivot, elevator, intake, hanger);
 
 		poseEstimatorLooper = new Looper(1 / 50D);
 		poseEstimator = PoseEstimator.getInstance();
@@ -85,6 +85,7 @@ public class Robot extends TimedRobot {
 		//autoChooser.addOption("Right Single Hatch Auto", new LeftSingleHatchAutoMode());
 
 		SmartDashboard.putData("Auto Chooser", autoChooser);
+
 	}
 
 	/**
