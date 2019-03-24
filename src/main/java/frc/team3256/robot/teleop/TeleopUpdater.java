@@ -43,25 +43,31 @@ public class TeleopUpdater {
 
     public void handleDrive() {
         driveTrain.setBrakeMode();
-        DrivePower drivePower = DriveTrain.getInstance().betterCurvatureDrive(
-                Math.abs(driverController.getThrottle()) > 0.15 ? driverController.getThrottle() : 0.0,
-                driverController.getTurn()*(driverController.getHighGear() ? 0.6 : 1.0),
-                driverController.getQuickTurn(),
-                driverController.getHighGear()
-        );
+        DrivePower drivePower;
+        if (driverController.getShouldAssist()) {
+            int pixelDisplacement = (int) SmartDashboard.getNumber("PixelDisplacement", 0);
+            drivePower = driveTrain.autoAlignAssist(driverController.getThrottle(), pixelDisplacement);
+        } else {
+            drivePower = DriveTrain.getInstance().betterCurvatureDrive(
+                    Math.abs(driverController.getThrottle()) > 0.15 ? driverController.getThrottle() : 0.0,
+                    driverController.getTurn() * (driverController.getHighGear() ? 0.6 : 1.0),
+                    driverController.getQuickTurn(),
+                    driverController.getHighGear()
+            );
+        }
         driveTrain.setHighGear(drivePower.getHighGear());
 
         //Implement and test once we get Ultrasonics installed and determine range
-        if((mNewSensors.getClimbLeftRange() < kClimbGroundRange
-                || mNewSensors.getClimbRightRange() < kClimbGroundRange
-                || mNewSensors.getFrontRange() < kClimbWallRange)
-                && mHanger.getHangerState() == Hanger.HangerState.HANGING
-                && mElevator.getCurrentPosition() < 0) { //Should be half elevator height
-            driveTrain.setHighGear(false);
-            driveTrain.setPowerOpenLoop(drivePower.getLeft()/2, drivePower.getRight()/2);
-        } else {
-            driveTrain.setPowerOpenLoop(drivePower.getLeft(), drivePower.getRight());
-        }
+//        if((mNewSensors.getClimbLeftRange() < kClimbGroundRange
+//                || mNewSensors.getClimbRightRange() < kClimbGroundRange
+//                || mNewSensors.getFrontRange() < kClimbWallRange)
+//                && mHanger.getHangerState() == Hanger.HangerState.HANGING
+//                && mElevator.getCurrentPosition() < 0) { //Should be half elevator height
+//            driveTrain.setHighGear(false);
+//            driveTrain.setPowerOpenLoop(drivePower.getLeft()/2, drivePower.getRight()/2);
+//        } else {
+//            driveTrain.setPowerOpenLoop(drivePower.getLeft(), drivePower.getRight());
+//        }
 
         driveTrain.setPowerOpenLoop(drivePower.getLeft(), drivePower.getRight());
     }
