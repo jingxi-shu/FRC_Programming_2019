@@ -74,7 +74,7 @@ public class HatchIntakeControlScheme extends CommonControlScheme {
         if (getController() != null) {
             getController().setRumbleForDuration(1.0, 300);
         }
-        TeleopUpdater.getInstance().changeToCargoControlScheme();
+        //TeleopUpdater.getInstance().changeToCargoControlScheme();
     }
 
     @Override

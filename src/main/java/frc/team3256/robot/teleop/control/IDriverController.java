@@ -7,5 +7,9 @@ public interface IDriverController {
     boolean getQuickTurn();
     boolean getHighGear();
 
-    boolean getShouldClimb();
+    boolean shouldElevatorUp();
+    boolean shouldElevatorDown();
+
+    boolean shouldCargoIntake();
+    boolean shouldCargoOuttake();
 }

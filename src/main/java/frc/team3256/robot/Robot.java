@@ -163,7 +163,7 @@ public class Robot extends TimedRobot {
 	 * This function is called periodically during autonomous/sandstorm.
 	 */
 	@Override
-	public void autonomousPeriodic() {
+	public void autonomousPeriodic() { /*
 		//basic logic below: keep executing auto until we disable it or it finishes, and don't allow it to be re-enabled
 		if (!maintainAutoExecution) {
 			teleopUpdater.update();
@@ -179,7 +179,7 @@ public class Robot extends TimedRobot {
 			}
 			enabledLooper.start();
 			subsystemManager.outputToDashboard();
-		}
+		}*/
 	}
 
 	/**

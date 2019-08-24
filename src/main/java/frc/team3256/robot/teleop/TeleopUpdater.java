@@ -13,11 +13,6 @@ public class TeleopUpdater {
     private DriveTrain driveTrain = DriveTrain.getInstance();
 
     private IDriverController driverController = XboxDriverController.getInstance();
-    private XboxControllerObserver manipulatorController;
-
-    private XboxListenerBase currentControlScheme;
-    private CargoIntakeControlScheme cargoIntakeControlScheme;
-    private HatchIntakeControlScheme hatchIntakeControlScheme;
 
     private Elevator mElevator = Elevator.getInstance();
     private Pivot mPivot = Pivot.getInstance();
@@ -31,12 +26,6 @@ public class TeleopUpdater {
     }
 
     private TeleopUpdater() {
-        manipulatorController = new XboxControllerObserver(1);
-        cargoIntakeControlScheme = new CargoIntakeControlScheme();
-        hatchIntakeControlScheme = new HatchIntakeControlScheme();
-
-        currentControlScheme = cargoIntakeControlScheme;
-        manipulatorController.setListener(currentControlScheme);
     }
 
     public void handleDrive() {
@@ -48,32 +37,30 @@ public class TeleopUpdater {
                 driverController.getHighGear()
         );
         driveTrain.setHighGear(drivePower.getHighGear());
-
-        //Implement once we get Ultrasonics installed
-//        if(mSensors.getRangeMM() < 70 && mHanger.getHangerState() == Hanger.HangerState.HANGING) {
-//            driveTrain.setHighGear(false);
-//            driveTrain.setPowerOpenLoop(drivePower.getLeft()/2, drivePower.getRight()/2);
-//        } else {
-//            driveTrain.setPowerOpenLoop(drivePower.getLeft(), drivePower.getRight());
-//        }
-
         driveTrain.setPowerOpenLoop(drivePower.getLeft(), drivePower.getRight());
+
     }
 
-    public void changeToCargoControlScheme() {
-        SmartDashboard.putString("ControlScheme", "Cargo");
-        currentControlScheme = cargoIntakeControlScheme;
-        manipulatorController.setListener(currentControlScheme);
-    }
+    public void handleEverythingElse() {
+        if (driverController.shouldElevatorUp()) {
+            mElevator.setWantedState(Elevator.WantedState.WANTS_TO_MANUAL_UP);
+        } else if (driverController.shouldElevatorDown()) {
+            mElevator.setWantedState(Elevator.WantedState.WANTS_TO_MANUAL_DOWN);
+        } else {
+            mElevator.setWantedState(Elevator.WantedState.WANTS_TO_HOLD);
+        }
 
-    public void changeToHatchControlScheme() {
-        SmartDashboard.putString("ControlScheme", "Hatch");
-        currentControlScheme = hatchIntakeControlScheme;
-        manipulatorController.setListener(currentControlScheme);
+        if(driverController.shouldCargoIntake()) {
+            mCargoIntake.setWantedState(CargoIntake.WantedState.WANTS_TO_INTAKE);
+        } else if (driverController.shouldCargoOuttake()) {
+            mCargoIntake.setWantedState(CargoIntake.WantedState.WANTS_TO_EXHAUST);
+        } else {
+            mCargoIntake.setWantedState(CargoIntake.WantedState.WANTS_TO_STOP);
+        }
     }
 
     public void update() {
         handleDrive();
-        manipulatorController.update();
+        handleEverythingElse();
     }
 }

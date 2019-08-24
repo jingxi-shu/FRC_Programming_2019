@@ -37,11 +37,14 @@ public class XboxDriverController implements IDriverController {
     }
 
     @Override
-    public boolean getShouldClimb() {
-        return xboxController.getStartButton();
-    }
+    public boolean shouldElevatorUp() { return xboxController.getYButton(); }
 
-    public boolean getShouldStopAuto() {
-        return xboxController.getAButton();
-    }
+    @Override
+    public boolean shouldElevatorDown() { return xboxController.getAButton(); }
+
+    @Override
+    public boolean shouldCargoIntake() { return xboxController.getXButton(); }
+
+    @Override
+    public boolean shouldCargoOuttake() { return xboxController.getBButton(); }
 }

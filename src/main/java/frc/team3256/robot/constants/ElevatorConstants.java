@@ -58,7 +58,7 @@ public class ElevatorConstants {
     public static final double kElevatorMaxPosition = 190; // 195
     public static final double kElevatorMinPosition = 0; // 1
 
-    public static final double kElevatorSpeed = 0.3;
+    public static final double kElevatorSpeed = 0.1; //Slower speed at first for demo
     public static final double kElevatorManualRPM = 7000;
     public static final int kHallEffectPort = 0;
 }
