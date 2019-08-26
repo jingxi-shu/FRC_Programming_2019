@@ -93,7 +93,7 @@ public class DriveTrain extends DriveTrainBase implements Loop {
             left *= left * left;
             right *= right * right;
         }
-        return new DrivePower(left, right, highGear);
+        return new DrivePower(left/2, right/2, highGear);
     }
 
     private static final double kWheelDeadband = 0.02;
