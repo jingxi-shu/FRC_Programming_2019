@@ -27,7 +27,7 @@ public class TeleopUpdater {
     private TeleopUpdater() {
         driver = new Joystick(0);
         leftShoot = new Solenoid(Constants.pcmOneId, 0);
-        rightShoot = new Solenoid(Constants.pcmOneId, 1);
+        rightShoot = new Solenoid(Constants.pcmTwoId, 6);
         leftEject = new DoubleSolenoid(Constants.pcmTwoId, Constants.leftEjectForward, Constants.leftEjectBack);
         rightEject = new DoubleSolenoid(Constants.pcmTwoId, Constants.rightEjectForward, Constants.rightEjectBack);
         leftPop = new DoubleSolenoid(Constants.pcmOneId, Constants.leftPopForward, Constants.leftPopBack);
