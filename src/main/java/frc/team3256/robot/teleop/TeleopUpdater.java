@@ -71,7 +71,7 @@ public class TeleopUpdater {
         if (driver.getRawAxis(2) > 0.25) {
             leftShoot.set(true);
             try {
-                Thread.sleep(85);
+                Thread.sleep(105);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
